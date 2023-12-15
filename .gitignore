@@ -3,3 +3,9 @@ __pycache__
 toy_data/
 data/*
 graphs/
+.idea/vcs.xml
+.idea/other.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/kaggle-cancer-detection.iml
+.idea/inspectionProfiles/profiles_settings.xml

@@ -21,6 +21,10 @@ def extract_normalized_features(image, segments):
     features = extract_features(image, segments)
     return scale_dict_list(features)
 
+# doesn't work better
+# def pixelcount(regionmask):
+#     return np.sum(regionmask)
+
 def extract_features(image, segments, include_background=False):
     
     """
@@ -57,7 +61,9 @@ def extract_features(image, segments, include_background=False):
     segments_ids = np.unique(segments)
     centers = np.array([np.mean(np.nonzero(segments==i),axis=1) for i in segments_ids])
 
+    # props = regionprops(segments, intensity_image=image, extra_properties=(pixelcount,)) # this thing is removing the last segment for some reason
     props = regionprops(segments, intensity_image=image) # this thing is removing the last segment for some reason
+    
     superpixel_features = []
     for i, prop in enumerate(props):
         labels = prop.label
@@ -67,7 +73,7 @@ def extract_features(image, segments, include_background=False):
         threshold = threshold_otsu(intensity_image)
         binary_image = intensity_image > threshold
 
-        area = prop.area
+        area = prop.area_bbox
         perimeter = prop.perimeter
         circularity = 4 * np.pi * area / (perimeter**2)
         eccentricity = prop.eccentricity
@@ -107,12 +113,12 @@ def extract_features(image, segments, include_background=False):
             'center_y': centers[i][1]
             
         })
-    # TODO one node is lost here, the code removes the biggest node, which is not the entire background, when it is divided in smaller pices
-    # if not include_background:
-    #     # skip the node with the biggest area (background):
-    #     areas = [superpixel_features[i]['area'] for i in range(len(superpixel_features))]
-    #     background_feature_set_index = areas.index(max(areas))
-    #     del superpixel_features[background_feature_set_index]
+    # TODO one node is lost here, the code removes not the biggest node
+    if not include_background:
+        # skip the node with the biggest area (background):
+        areas = [superpixel_features[i]['area'] for i in range(len(superpixel_features))]
+        background_feature_set_index = areas.index(max(areas))
+        del superpixel_features[background_feature_set_index]
 
     return superpixel_features
 
